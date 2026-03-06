@@ -9,3 +9,6 @@ A repo for checking how masking might change groupfinder results.
 * What fraction of groups loose a meaningful amount of stellar mass per N? - Heatmap, N, stellar mass missing, density.
 * What fraction of the groups loose a meaningful amount of r50 and gapper vel dispersion per N?
 * When applying nessie, how do the S scores compare between a masked and an unmasked catalog?
+
+* Does masking have the same effect as dropping sources at random from the catalog on each of these meterics, to the same given global completeness?
+- If so, does a global completeness correction work better when using nessie?
