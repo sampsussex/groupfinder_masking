@@ -15,5 +15,7 @@ We can compare deep, north and south WAVES regions as well as GAMA to see if mas
 * I need to now start thinking about my errors. This needs to be in the mask fraction perhaps?
 - I could also just say this mask is basically bright GAIA (not true for waves-s where there is a big GC), and pick different non galatic sky patches to mask out. Could also randomly drop that GC in somewhere. Also need to consider if the ghostmasks can be done as well.
 
+* I also need to compare WAVESwideN/S, WAVESdeep, and GAMA.
+
 * Is a correction to dynamical or stellar mass possible? How consistent are these results?
 - Would this mean fitting a function to counts vs gapper vel?
