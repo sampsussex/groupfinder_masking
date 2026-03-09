@@ -3,64 +3,46 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 from utils import load_and_format_sharks_gals
-from nessie import FlatCosmology, RedshiftCatalog
-from nessie.helper_funcs import create_density_function
+from matplotlib.colors import LogNorm
+
+from  nessie  import  FlatCosmology, RedshiftCatalog
+from  nessie.helper_funcs  import  create_density_function
 
 
-REGION = "wide"
+REGION = 'wide'
 gals, groups = load_and_format_sharks_gals(
     "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_shark.parquet",
     region=REGION
 )
 
-gals_masked = gals[gals["masked"] == False]
+gals_masked = gals[gals['masked'] == False]
 
-ra, dec, redshifts = gals["ra"], gals["dec"], gals["redshift_observed"]
-ra_masked, dec_masked, redshifts_masked = (
-    gals_masked["ra"],
-    gals_masked["dec"],
-    gals_masked["redshift_observed"],
-)
+ra, dec, redshifts = gals['ra'], gals['dec'], gals['redshift_observed']
+ra_masked, dec_masked, redshifts_masked = gals_masked['ra'], gals_masked['dec'], gals_masked['redshift_observed']
+cosmo = FlatCosmology(h = 0.7, omega_matter = 0.3)
 
-cosmo = FlatCosmology(h=0.7, omega_matter=0.3)
 
-if REGION == "wide":
-    running_density_all = create_density_function(
-        redshifts,
-        total_counts=len(redshifts),
-        survey_fractional_area=0.02748648583,
-        cosmology=cosmo,
-    )
-    running_density_masked = create_density_function(
-        redshifts_masked,
-        total_counts=len(redshifts_masked),
-        survey_fractional_area=0.02565146777,
-        cosmology=cosmo,
-    )
+if REGION == 'wide':
+    running_density_all = create_density_function(redshifts, total_counts = len(redshifts), survey_fractional_area = 0.02748648583, cosmology = cosmo)
+    runnning_density_masked = create_density_function(redshifts_masked, total_counts = len(redshifts_masked), survey_fractional_area = 0.02565146777, cosmology = cosmo)
 
-# Ratio of areas
 area_ratio = 0.02748648583 / 0.02565146777
-
 # Running group catalog
 red_cat_all = RedshiftCatalog(ra, dec, redshifts, running_density_all, cosmo)
-red_cat_masked = RedshiftCatalog(
-    ra_masked, dec_masked, redshifts_masked, running_density_masked, cosmo
-)
+red_cat_masked = RedshiftCatalog(ra_masked, dec_masked, redshifts_masked, runnning_density_masked, cosmo)
 
 red_cat_all.set_completeness()
 red_cat_masked.set_completeness()
 
-red_cat_all.group_ids = gals["id_fof"].values
-red_cat_masked.group_ids = gals_masked["id_fof"].values
+red_cat_all.run_fof(b0 = 0.05, r0 = 32)
+red_cat_masked.run_fof(b0 = 0.05, r0 = 32)
 
-group_cat_all = red_cat_all.calculate_group_table(
-    gals["mag_abs_Z_VISTA"],
-    velocity_errors=np.zeros_like(gals["mag_abs_Z_VISTA"]),
-)
-group_cat_masked = red_cat_masked.calculate_group_table(
-    gals_masked["mag_abs_Z_VISTA"],
-    velocity_errors=np.zeros_like(gals_masked["mag_abs_Z_VISTA"]),
-)
+#red_cat_all.group_ids = gals['id_fof'].values
+#red_cat_masked.group_ids = gals_masked['id_fof'].values
+
+group_cat_all = red_cat_all.calculate_group_table(gals['mag_abs_Z_VISTA'], velocity_errors = np.zeros_like(gals['mag_abs_Z_VISTA']))
+group_cat_masked = red_cat_masked.calculate_group_table(gals_masked['mag_abs_Z_VISTA'], velocity_errors = np.zeros_like(gals_masked['mag_abs_Z_VISTA']))
+
 
 # ============================================================
 # Inputs
@@ -136,17 +118,13 @@ fig1, axs = plt.subplots(
 )
 
 ax1, ax2, ax3, ax4 = axs
-ax2.sharex(ax1)
-ax4.sharex(ax3)
-ax1.tick_params(labelbottom=False)
-ax3.tick_params(labelbottom=False)
 
 # R50 counts
 ax1.hist(r50_all, bins=r50_bins, histtype="step", linewidth=2, label="All")
 ax1.hist(r50_masked, bins=r50_bins, histtype="step", linewidth=2, label="Masked")
 ax1.set_yscale("log")
 ax1.set_ylabel("Count")
-ax1.set_title("R50 distribution")
+ax1.set_title("Nessie Groups R50 distribution")
 ax1.legend()
 ax1.grid(alpha=0.3)
 
@@ -162,7 +140,7 @@ ax3.hist(vd_all, bins=vd_bins, histtype="step", linewidth=2, label="All")
 ax3.hist(vd_masked, bins=vd_bins, histtype="step", linewidth=2, label="Masked")
 ax3.set_yscale("log")
 ax3.set_ylabel("Count")
-ax3.set_title("Velocity dispersion distribution")
+ax3.set_title("Nessie Groups Velocity dispersion distribution")
 ax3.legend()
 ax3.grid(alpha=0.3)
 
@@ -173,7 +151,7 @@ ax4.set_ylabel("Frac.\nresid")
 ax4.set_xlabel("$\sigma_{GAP}$ [km/s^2]")
 ax4.grid(alpha=0.3)
 
-fig1.savefig("../plots/group_property_histograms_log_counts.png", dpi=300, bbox_inches="tight")
+fig1.savefig("../plots/nessie_group_property_histograms_log_counts.png", dpi=300, bbox_inches="tight")
 plt.show()
 
 # ============================================================
@@ -212,11 +190,6 @@ fig2, axs = plt.subplots(
 
 ax1, ax2, ax3, ax4 = axs
 
-ax2.sharex(ax1)
-ax4.sharex(ax3)
-ax1.tick_params(labelbottom=False)
-ax3.tick_params(labelbottom=False)
-
 # R50 weighted counts
 ax1.hist(
     r50_all,
@@ -235,7 +208,7 @@ ax1.hist(
 )
 ax1.set_yscale("log")
 ax1.set_ylabel("Weighted count")
-ax1.set_title("R50 distribution (area corrected)")
+ax1.set_title("Nessie Groups R50 distribution, area corrected")
 ax1.legend()
 ax1.grid(alpha=0.3)
 
@@ -264,7 +237,7 @@ ax3.hist(
 )
 ax3.set_yscale("log")
 ax3.set_ylabel("Weighted count")
-ax3.set_title("Velocity dispersion distribution (area corrected)")
+ax3.set_title("Nessie groups Velocity dispersion distribution, area corrected")
 ax3.legend()
 ax3.grid(alpha=0.3)
 
@@ -276,7 +249,7 @@ ax4.set_xlabel("$\sigma_{GAP}$ [km/s^2]")
 ax4.grid(alpha=0.3)
 
 fig2.savefig(
-    "../plots/group_property_histograms_log_counts_area_corrected.png",
+    "../plots/nessie_group_property_histograms_log_counts_area_corrected.png",
     dpi=300,
     bbox_inches="tight",
 )

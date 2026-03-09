@@ -8,8 +8,12 @@ We can compare deep, north and south WAVES regions as well as GAMA to see if mas
 * What fraction of groups are missing members per group N? - Remove groups missing all members.
 * What fraction of groups loose a meaningful amount of stellar mass? 
 * What fraction of groups loose a meaningful amount of stellar mass per N? - Heatmap, N, stellar mass missing, density.
-* What fraction of the groups loose a meaningful amount of r50 and gapper vel dispersion per N?
-* When applying nessie, how do the S scores compare between a masked and an unmasked catalog?
+* What fraction of the groups loose a meaningful amount of r50 and gapper vel dispersion ?
+* When applying nessie, how are the calculated r50 and gapper vel disperson affected?
+* How does this propagate to a mass A - like HMF?
 
-* Does masking have the same effect as dropping sources at random from the catalog on each of these meterics, to the same given global completeness?
-- If so, does a global completeness correction work better when using nessie?
+* I need to now start thinking about my errors. This needs to be in the mask fraction perhaps?
+- I could also just say this mask is basically bright GAIA (not true for waves-s where there is a big GC), and pick different non galatic sky patches to mask out. Could also randomly drop that GC in somewhere. Also need to consider if the ghostmasks can be done as well.
+
+* Is a correction to dynamical or stellar mass possible? How consistent are these results?
+- Would this mean fitting a function to counts vs gapper vel?
