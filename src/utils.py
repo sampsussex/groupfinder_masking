@@ -35,30 +35,31 @@ def load_and_format_sharks_gals(
         cols = [
             "ra",
             "dec",
-            "id_galaxy_sky",
+           # "id_galaxy_sky",
             "id_group_sky",
-            "type",
-            "zcos",
-            "zobs",
-            "mstars_bulge",
-            "mstars_disk",
-            "mgas_disk",
-            "mgas_bulge",
-            "mvir_hosthalo",
-            "mvir_subhalo",
+        #    "type",
+            "redshift_cosmological",
+            "redshift_observed",
+            "mass_stellar_bulge",
+            "mass_stellar_disk",
+         #   "mgas_disk",
+        #    "mgas_bulge",
+            "mass_virial_hosthalo",
+            "mass_virial_subhalo",
             "id_fof",
             "sfr_disk",
             "sfr_burst",
-            "total_ab_dust_u_VST",
-            "total_ab_dust_g_VST",
-            "total_ab_dust_r_VST",
-            "total_ab_dust_i_VST",
-            "total_ab_dust_Z_VISTA",
-            "total_ab_dust_Y_VISTA",
-            "total_ab_dust_J_VISTA",
-            "total_ab_dust_H_VISTA",
-            "total_ab_dust_K_VISTA",
-            "total_ap_dust_Z_VISTA",
+            "mag_abs_u_VST",
+            "mag_abs_g_VST",
+            "mag_abs_r_VST",
+            "mag_abs_i_VST",
+            "mag_abs_Z_VISTA",
+            "mag_abs_Y_VISTA",
+            "mag_abs_J_VISTA",
+            "mag_abs_H_VISTA",
+            "mag_abs_K_VISTA",
+            "mag_Z_VISTA",
+            "masked"
         ]
 
     valid_regions = ["deep", "wide", None]
@@ -71,16 +72,16 @@ def load_and_format_sharks_gals(
     required_cols = {
         "ra",
         "dec",
-        "zobs",
+        "redshift_observed",
         "id_fof",
         "id_group_sky",
-        "mvir_hosthalo",
-        "mstars_disk",
-        "mstars_bulge",
+        "mass_virial_hosthalo",
+        "mass_stellar_disk",
+        "mass_stellar_bulge",
         "sfr_disk",
         "sfr_burst",
-        "total_ab_dust_Z_VISTA",
-        "total_ap_dust_Z_VISTA",
+        "mag_abs_Z_VISTA",
+        "mag_Z_VISTA",
     }
     missing = required_cols.difference(cols)
     if missing:
@@ -95,7 +96,7 @@ def load_and_format_sharks_gals(
     # ------------------------------------------------------------------
     h = 0.67
 
-    gals["stellar_mass"] = (gals["mstars_disk"] + gals["mstars_bulge"]) / h
+    gals["stellar_mass"] = (gals["mass_stellar_disk"] + gals["mass_stellar_bulge"]) / h
     gals["sfr_total"] = (gals["sfr_disk"] + gals["sfr_burst"]) / h
 
     # Safe logs
@@ -104,23 +105,23 @@ def load_and_format_sharks_gals(
 
     # sSFR = SFR / Mstar
     gals["log_sSFR"] = np.log10(
-        ((gals["sfr_disk"] + gals["sfr_burst"]) * 1e-9 / (gals["mstars_disk"] + gals["mstars_bulge"]))
-        .where((gals["mstars_disk"] + gals["mstars_bulge"]) > 0)
+        ((gals["sfr_disk"] + gals["sfr_burst"]) * 1e-9 / (gals["mass_stellar_disk"] + gals["mass_stellar_bulge"]))
+        .where((gals["mass_stellar_disk"] + gals["mass_stellar_bulge"]) > 0)
     )
 
     # Basic cleaning
     mask = (
         gals["log_stellar_mass"].notna()
         & (gals["log_stellar_mass"] > 8.0)
-        & gals["total_ab_dust_Z_VISTA"].notna()
-        & (gals["total_ab_dust_Z_VISTA"] > -99)
+        & gals["mag_abs_Z_VISTA"].notna()
+        & (gals["mag_abs_Z_VISTA"] > -99)
     )
     gals = gals.loc[mask].reset_index(drop=True)
 
     group_col = "id_fof"
     host_id_col = "id_group_sky"
-    mass_col = "mvir_hosthalo"
-    mag_col = "total_ab_dust_Z_VISTA"
+    mass_col = "mass_virial_hosthalo"
+    mag_col = "mag_abs_Z_VISTA"
     stellar_mass_col = "stellar_mass"
 
     # ------------------------------------------------------------------
@@ -151,7 +152,7 @@ def load_and_format_sharks_gals(
     # ------------------------------------------------------------------
     # 3) Broadcast BCG properties to all members
     # ------------------------------------------------------------------
-    bcg_broadcast_cols = ["ra", "dec", "zobs", mag_col, stellar_mass_col]
+    bcg_broadcast_cols = ["ra", "dec", "redshift_observed", mag_col, stellar_mass_col]
 
     for col in bcg_broadcast_cols:
         gals[f"{col}_bcg"] = gals[col]
@@ -234,8 +235,8 @@ def load_and_format_sharks_gals(
             & (gals["ra"] < 350.0)
             & (gals["dec"] > -35.0)
             & (gals["dec"] < -30.0)
-            & (gals["zobs"] < 0.8)
-            & (gals["total_ap_dust_Z_VISTA"] < 21.25)
+            & (gals["redshift_observed"] < 0.8)
+            & (gals["mag_Z_VISTA"] < 21.25)
         )
         gals = gals.loc[mask_region].reset_index(drop=True)
 
@@ -248,16 +249,16 @@ def load_and_format_sharks_gals(
             & (ra_360 < 225.0)
             & (gals["dec"] > -3.95)
             & (gals["dec"] < 3.95)
-            & (gals["zobs"] < 0.2)
-            & (gals["total_ap_dust_Z_VISTA"] < 21.25)
+            & (gals["redshift_observed"] < 0.2)
+            & (gals["mag_Z_VISTA"] < 21.25)
         )
 
         mask_wide_S = (
             ((ra_360 > 330.0) | (ra_360 < 51.6))
             & (gals["dec"] > -35.6)
             & (gals["dec"] < -27.0)
-            & (gals["zobs"] < 0.2)
-            & (gals["total_ap_dust_Z_VISTA"] < 21.25)
+            & (gals["redshift_observed"] < 0.2)
+            & (gals["mag_Z_VISTA"] < 21.25)
         )
 
         gals = gals.loc[mask_wide_N | mask_wide_S].reset_index(drop=True)
@@ -268,7 +269,7 @@ def load_and_format_sharks_gals(
     group_cols = [
         "ra_bcg",
         "dec_bcg",
-        "zobs_bcg",
+        "redshift_observed_bcg",
         f"{mag_col}_bcg",
         "stellar_mass_bcg",
         "log_stellar_mass_bcg",

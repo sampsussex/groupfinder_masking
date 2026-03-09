@@ -1,7 +1,8 @@
 # groupfinder_masking
 A repo for checking how masking might change groupfinder results. 
+We can compare deep, north and south WAVES regions as well as GAMA to see if masking density has an proportional affect.
 
-# Qs to answer in the case of a WAVES like simulation
+## Qs to answer in the case of a WAVES like simulation
 
 * What fraction of groups are missing members from masking total?
 * What fraction of groups are missing members per group N? - Remove groups missing all members.
