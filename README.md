@@ -61,6 +61,6 @@ And would you look at that, this whole effect seems to go away. Now, to see why,
 
 ![Alt text](plots/nessie_masked_vs_unmasked_S_score.png)
 
-So, as this S score scales ^(1/4) with efficency and purity, what we see is the groups are about 99 percent the same between the group finder run on the masked catalog, and the groupfinder run on the unmasked catalog which then has masked galaxies removed afterwards. So, these two catalogs are basically identical. So, the systamtic offset goes away, and gets washed out by how noise groupfinding is anyway. 
+So, as this S score scales ^(1/4) with efficency and purity, what we see is the groups are about 99 percent the same between the group finder run on the masked catalog, and the groupfinder run on the unmasked catalog which then has masked galaxies removed afterwards. So, these two catalogs are basically identical. So, the systamtic offset goes away, and gets washed out by how noisy groupfinding is anyway. 
 
-![Alt Text](plots/masked_galaxy_stats.png)
+
