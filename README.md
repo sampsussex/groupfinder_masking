@@ -63,4 +63,6 @@ And would you look at that, this whole effect seems to go away. Now, to see why,
 
 So, as this S score scales ^(1/4) with efficency and purity, what we see is the groups are about 99 percent the same between the group finder run on the masked catalog, and the groupfinder run on the unmasked catalog which then has masked galaxies removed afterwards. So, these two catalogs are basically identical. So, the systamtic offset goes away, and gets washed out by how noisy groupfinding is anyway. 
 
+Now, as a next step i can find out what makes the group finders noisy in this way (id guess from shattering fof chains, and large groups being poor anyway) but should probably stop here to see how interesting others find it.
+
 
