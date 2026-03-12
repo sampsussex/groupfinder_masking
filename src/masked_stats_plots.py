@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 from utils import load_and_format_sharks_gals
 from matplotlib.colors import LogNorm
 
-gals, groups = load_and_format_sharks_gals(
-    "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_shark.parquet",
-    region="wide"
-)
+#gals, groups = load_and_format_sharks_gals(
+#    "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_shark.parquet",
+#    region="wide"
+#)
+gals = pd.read_parquet("/Users/sp624AA/Downloads/group_finding_mocks/galaxies_filtered_wide_mock_fixed_masking.parquet")
 
 # -------------------------------------
 # Config
@@ -148,15 +149,11 @@ Ns_use = np.arange(xmin, xmax + 1)
 # Precompute member-heatmap counts
 # -------------------------------------
 member_bins = {}
-
 for N in Ns_use:
-    # allowed fractions are k/N for k=1..N-1
     possible = 100.0 * np.arange(1, N) / N
     if len(possible) == 0:
         continue
-
     vals = y_members_pct[x_members == N]
-
     if len(vals) == 0:
         counts = np.zeros(len(possible), dtype=int)
     else:
@@ -164,23 +161,13 @@ for N in Ns_use:
         k_vals = np.clip(k_vals, 1, N - 1)
         counts = np.bincount(k_vals, minlength=N)[1:N]
 
-    # adaptive y-bin edges
-    if len(possible) == 1:
-        # N=2 -> only one allowed value at 50%, so give it a real-height bin
-        yedges = np.array([0.0, 100.0])
-    else:
-        mids = 0.5 * (possible[:-1] + possible[1:])
-        yedges = np.empty(len(possible) + 1, dtype=float)
-        yedges[1:-1] = mids
-        yedges[0] = 0.0
-        yedges[-1] = 100.0
+    yedges = np.linspace(0, 100, N)
 
     member_bins[N] = {
         "counts": counts,
         "yedges": yedges,
     }
-
-# -------------------------------------
+#---------------------------
 # Precompute mass-heatmap counts
 # -------------------------------------
 xbins_mass = np.arange(xmin - 0.5, xmax + 1.5, 1.0)

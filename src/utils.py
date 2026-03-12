@@ -62,7 +62,7 @@ def load_and_format_sharks_gals(
             "masked"
         ]
 
-    valid_regions = ["deep", "wide", None]
+    valid_regions = ["deep", "wide", "wide-S", "wide-N", None]
     if region not in valid_regions:
         raise ValueError(f"Invalid region={region!r}. Must be one of {valid_regions}.")
 
@@ -250,8 +250,37 @@ def load_and_format_sharks_gals(
             & (gals["dec"] > -3.95)
             & (gals["dec"] < 3.95)
             & (gals["redshift_observed"] < 0.2)
+            & (gals["mag_Z_VISTA"] < 21.5)
+        )
+
+        mask_wide_S = (
+            ((ra_360 > 330.0) | (ra_360 < 51.6))
+            & (gals["dec"] > -35.6)
+            & (gals["dec"] < -27.0)
+            & (gals["redshift_observed"] < 0.2)
+            & (gals["mag_Z_VISTA"] < 21.15)
+        )
+
+        gals = gals.loc[mask_wide_N | mask_wide_S].reset_index(drop=True)
+
+
+    elif region == "wide-N":
+        # Allow RA wrap-around cleanly
+        ra_360 = gals["ra"] % 360.0
+
+        mask_wide_N = (
+            (ra_360 > 157.25)
+            & (ra_360 < 225.0)
+            & (gals["dec"] > -3.95)
+            & (gals["dec"] < 3.95)
+            & (gals["redshift_observed"] < 0.2)
             & (gals["mag_Z_VISTA"] < 21.25)
         )
+        gals = gals.loc[mask_wide_N].reset_index(drop=True)
+
+    elif region == "wide-S":
+        # Allow RA wrap-around cleanly
+        ra_360 = gals["ra"] % 360.0
 
         mask_wide_S = (
             ((ra_360 > 330.0) | (ra_360 < 51.6))
@@ -261,7 +290,7 @@ def load_and_format_sharks_gals(
             & (gals["mag_Z_VISTA"] < 21.25)
         )
 
-        gals = gals.loc[mask_wide_N | mask_wide_S].reset_index(drop=True)
+        gals = gals.loc[mask_wide_S].reset_index(drop=True)
 
     # ------------------------------------------------------------------
     # 8) Build group table AFTER region selection
