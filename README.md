@@ -19,3 +19,5 @@ We can compare deep, north and south WAVES regions as well as GAMA to see if mas
 
 * Is a correction to dynamical or stellar mass possible? How consistent are these results?
 - Would this mean fitting a function to counts vs gapper vel?
+
+[test](plots/masked_galaxy_stats.png)
