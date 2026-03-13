@@ -1,14 +1,15 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from utils import load_and_format_sharks_gals
 from matplotlib.colors import LogNorm
 
-#gals, groups = load_and_format_sharks_gals(
-#    "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_shark.parquet",
-#    region="wide"
-#)
-gals = pd.read_parquet("/Users/sp624AA/Downloads/group_finding_mocks/galaxies_filtered_wide_mock_fixed_masking.parquet")
+# gals, groups = load_and_format_sharks_gals(
+#     "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_shark.parquet",
+#     region="wide"
+# )
+gals = pd.read_parquet(
+    "/Users/sp624AA/Downloads/group_finding_mocks/galaxies_filtered_wide_mock_fixed_masking.parquet"
+)
 
 # -------------------------------------
 # Config
@@ -52,12 +53,8 @@ group_stats["missing_mass_fraction"] = (
 )
 
 # -------------------------------------
-# Drop groups where everything is masked
-# -------------------------------------
-group_stats = group_stats[group_stats["n_masked"] < group_stats["n_total"]].copy()
-
-# -------------------------------------
 # Fraction of groups with masked members
+# (including fully masked groups)
 # -------------------------------------
 has_mask = group_stats["n_masked"] > 0
 frac_masked_groups = has_mask.mean()
@@ -65,30 +62,49 @@ frac_masked_groups = has_mask.mean()
 print(f"Fraction of groups with ≥1 masked galaxy: {frac_masked_groups:.3f}")
 
 # -------------------------------------
-# Fraction missing vs richness
+# Panel 2 statistics:
+# 1) ratio of sums
+# 2) average per-group masked fraction
+# 3) fraction of groups with >=1 masked member
 # -------------------------------------
-richness = group_stats["N"]
-missing_frac = group_stats["masked_fraction"]
+masked_sum_vs_N = group_stats.groupby("N")["n_masked"].sum()
+members_sum_vs_N = group_stats.groupby("N")["n_total"].sum()
+ratio_of_sums_vs_N = masked_sum_vs_N / members_sum_vs_N
 
-frac_vs_N = group_stats.groupby("N")["masked_fraction"].mean()
+mean_frac_vs_N = group_stats.groupby("N")["masked_fraction"].mean()
+
+pct_groups_with_mask_vs_N = (
+    group_stats.assign(has_mask=(group_stats["n_masked"] > 0).astype(float))
+    .groupby("N")["has_mask"]
+    .mean()
+)
+
+pct_groups_fully_masked_vs_N = (
+    group_stats.assign(all_masked=(group_stats["n_masked"] == group_stats["n_total"]).astype(float))
+    .groupby("N")["all_masked"]
+    .mean()
+)
 
 # -------------------------------------
 # Subset for groups with >=1 masked member
+# and not fully masked
+# (plots 3 and 4 unchanged)
 # -------------------------------------
 subset = group_stats[group_stats["n_masked"] > 0].copy()
+subset = subset[subset["n_masked"] < subset["n_total"]].copy()
 
 # -------------------------------------
 # Richness distributions for top panel
 # -------------------------------------
 n_groups_vs_N = group_stats.groupby("N").size()
-n_masked_groups_vs_N = subset.groupby("N").size()
+n_masked_groups_vs_N = group_stats[group_stats["n_masked"] > 0].groupby("N").size()
 
 N_vals = np.arange(1, int(group_stats["N"].max()) + 1)
 n_groups_plot = n_groups_vs_N.reindex(N_vals, fill_value=0)
 n_masked_plot = n_masked_groups_vs_N.reindex(N_vals, fill_value=0)
 
 # -------------------------------------
-# Arrays for panels
+# Arrays for panels 3 and 4
 # -------------------------------------
 x_members = subset["N"].to_numpy().astype(int)
 y_members_pct = subset["masked_fraction"].to_numpy() * 100.0
@@ -107,7 +123,7 @@ fig, (ax0, ax1, ax2, ax3) = plt.subplots(
 )
 
 # -------------------------------------
-# Panel 1: number of groups vs richness
+# Panel 1: number of groups vs richness r"$N_{\rm groups}(N_{\rm masked}>0) \,/\, N_{\rm groups}$"
 # -------------------------------------
 ax0.plot(
     N_vals,
@@ -115,7 +131,7 @@ ax0.plot(
     marker="o",
     ms=3,
     lw=1,
-    label="All groups"
+    label=r"$N_{\rm groups}$"
 )
 ax0.plot(
     N_vals,
@@ -123,9 +139,9 @@ ax0.plot(
     marker="o",
     ms=3,
     lw=1,
-    label="Incomplete groups with ≥1 masked galaxy"
+    label=r"$N_{\rm groups}(N_{\rm masked}>0)$"
 )
-  
+
 ax0.set_ylabel("Number of groups")
 ax0.set_yscale("log")
 ax0.set_title("Masked Galaxy Groups in WAVESwide Mock", fontsize=14)
@@ -133,11 +149,46 @@ ax0.grid(alpha=0.3)
 ax0.legend(frameon=False, fontsize=9)
 
 # -------------------------------------
-# Panel 2: mean % members masked vs richness
+# Panel 2: % masked vs richness
 # -------------------------------------
-ax1.scatter(frac_vs_N.index, frac_vs_N.values * 100.0, s=8)
-ax1.set_ylabel("% members masked")
+ax1.plot(
+    ratio_of_sums_vs_N.index,
+    ratio_of_sums_vs_N.values * 100.0,
+    marker="o",
+    ms=3,
+    lw=1,
+    label=r"$\sum N_{\rm masked} \,/\, \sum N_{\rm members}$"
+)
+ax1.plot(
+    mean_frac_vs_N.index,
+    mean_frac_vs_N.values * 100.0,
+    marker="o",
+    ms=3,
+    lw=1,
+    label=r"$\left\langle N_{\rm masked} \,/\, N_{\rm members} \right\rangle$"
+)
+ax1.plot(
+    pct_groups_with_mask_vs_N.index,
+    pct_groups_with_mask_vs_N.values * 100.0,
+    marker="o",
+    ms=3,
+    lw=1,
+    label=r"$N_{\rm groups}(N_{\rm masked}>0) \,/\, N_{\rm groups}$"
+)
+
+ax1.plot(
+    pct_groups_fully_masked_vs_N.index,
+    pct_groups_fully_masked_vs_N.values * 100.0,
+    marker="o",
+    ms=3,
+    lw=1,
+    label=r"$N_{\rm groups}(N_{\rm masked}=N_{\rm members}) \,/\, N_{\rm groups}$"
+)
+
+ax1.set_ylabel("% masked")
 ax1.grid(alpha=0.3)
+ax1.legend(frameon=False, fontsize=9)
+ax1.set_ylim(0, 75)
 
 # -------------------------------------
 # Heatmap config
@@ -153,6 +204,7 @@ for N in Ns_use:
     possible = 100.0 * np.arange(1, N) / N
     if len(possible) == 0:
         continue
+
     vals = y_members_pct[x_members == N]
     if len(vals) == 0:
         counts = np.zeros(len(possible), dtype=int)
@@ -167,7 +219,8 @@ for N in Ns_use:
         "counts": counts,
         "yedges": yedges,
     }
-#---------------------------
+
+# -------------------------------------
 # Precompute mass-heatmap counts
 # -------------------------------------
 xbins_mass = np.arange(xmin - 0.5, xmax + 1.5, 1.0)
@@ -246,7 +299,7 @@ ax3.grid(alpha=0.3)
 # One shared colourbar for both heatmaps
 # -------------------------------------
 cbar = fig.colorbar(
-    h3[3],              # any mappable using shared_norm is fine
+    h3[3],
     ax=[ax2, ax3],
     orientation="horizontal",
     pad=0.12,
@@ -258,5 +311,6 @@ cbar.set_label("Counts per bin")
 # Shared x limits
 # -------------------------------------
 ax3.set_xlim(xmin, xmax)
+
 plt.savefig("../plots/masked_galaxy_stats.png", dpi=300, bbox_inches="tight")
 plt.show()
