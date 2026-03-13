@@ -76,4 +76,4 @@ Now, as a next step i can find out what makes the group finders noisy in this wa
 ## Questions
 
 * Does group edge, like in gama, get rid of any of these issues?
-* 
+* Why do groupfinders not seem to experience any issues? (see line above)
