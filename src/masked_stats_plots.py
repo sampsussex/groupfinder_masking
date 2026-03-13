@@ -139,7 +139,7 @@ ax0.plot(
     marker="o",
     ms=3,
     lw=1,
-    label=r"$N_{\rm groups}(N_{\rm masked}>0)$"
+    label=r"$N_{\rm groups}$ with > 0 masked members"
 )
 
 ax0.set_ylabel("Number of groups")
@@ -151,21 +151,21 @@ ax0.legend(frameon=False, fontsize=9)
 # -------------------------------------
 # Panel 2: % masked vs richness
 # -------------------------------------
-ax1.plot(
-    ratio_of_sums_vs_N.index,
-    ratio_of_sums_vs_N.values * 100.0,
-    marker="o",
-    ms=3,
-    lw=1,
-    label=r"$\sum N_{\rm masked} \,/\, \sum N_{\rm members}$"
-)
+#ax1.plot(
+#    ratio_of_sums_vs_N.index,
+#    ratio_of_sums_vs_N.values * 100.0,
+#    marker="o",
+#    ms=3,
+#    lw=1,
+#    label=r"$\sum N_{\rm gals masked} \,/\, \sum N_{\rm gals}$"
+#)
 ax1.plot(
     mean_frac_vs_N.index,
     mean_frac_vs_N.values * 100.0,
     marker="o",
     ms=3,
     lw=1,
-    label=r"$\left\langle N_{\rm masked} \,/\, N_{\rm members} \right\rangle$"
+    label=r"Average masked fraction per $N_{\rm groups}$"
 )
 ax1.plot(
     pct_groups_with_mask_vs_N.index,
@@ -173,7 +173,7 @@ ax1.plot(
     marker="o",
     ms=3,
     lw=1,
-    label=r"$N_{\rm groups}(N_{\rm masked}>0) \,/\, N_{\rm groups}$"
+    label=r"$N_{\rm groups}$ with > 0 masked members"
 )
 
 ax1.plot(
@@ -182,7 +182,7 @@ ax1.plot(
     marker="o",
     ms=3,
     lw=1,
-    label=r"$N_{\rm groups}(N_{\rm masked}=N_{\rm members}) \,/\, N_{\rm groups}$"
+    label=r"$N_{\rm groups}$ with all members masked"
 )
 
 ax1.set_ylabel("% masked")
